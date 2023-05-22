@@ -2,6 +2,7 @@
 using Pinger.Interfaces;
 using Pinger.Logger;
 using Pinger.PingHandlers;
+using System;
 using System.Collections.Specialized;
 using System.Configuration;
 
@@ -16,7 +17,7 @@ namespace Pinger
 			config = ConfigurationManager.AppSettings;
 			ConfigureService();
 
-			var pinger = kernel.Get<IPingManager>();
+            var pinger = kernel.Get<IPingManager>();
 			pinger.Run();
 
 		}
@@ -30,8 +31,9 @@ namespace Pinger
 
 			kernel.Bind<IPinger>().To<ICMPPing>().When(c => config.Get("protocol").ToLower() == "icmp");
             kernel.Bind<IPinger>().To<TCPPing>().When(c => config.Get("protocol").ToLower() == "tcp");
+            kernel.Bind<IPinger>().To<HTTPPing>().When(c => config.Get("protocol").ToLower() == "http");
 
-			kernel.Bind<IPinger>().To<ICMPPing>();
+            kernel.Bind<IPinger>().To<ICMPPing>();
 
         }
     }

@@ -52,6 +52,7 @@
     <Compile Include="Interfaces\IPinger.cs" />
     <Compile Include="Interfaces\IPingManager.cs" />
     <Compile Include="Logger\LogToFile.cs" />
+    <Compile Include="PingHandlers\HTTPPing.cs" />
     <Compile Include="PingHandlers\ICMPPing.cs" />
     <Compile Include="PingHandlers\PingManager.cs" />
     <Compile Include="PingHandlers\TCPPing.cs" />
