@@ -1,7 +1,5 @@
 ﻿using Pinger.Interfaces;
 using System;
-using System.Collections.Specialized;
-using System.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,14 +7,16 @@ namespace Pinger.PingHandlers
 {
 	public class PingManager : IPingManager
 	{
-		private readonly NameValueCollection config;
+		private readonly string _host;
+        private readonly double _period;
         private readonly ILogger _logger;
 		private readonly IPinger _pinger;
-        public PingManager(ILogger logger, IPinger pinger)
+        public PingManager(ILogger logger, IPinger pinger, string host, double period)
 		{
 			_pinger = pinger;
 			_logger = logger;
-			config = ConfigurationManager.AppSettings;
+			_host = host;
+			_period = period;
 		}
 		public void Run()
 		{
@@ -29,11 +29,10 @@ namespace Pinger.PingHandlers
 				{
 					var reply = await _pinger.Ping();
 
-					if (reply) _logger.Log($"{config.Get("host")} OK");
-					else _logger.Log($"{config.Get("host")} FAILED");
+					if (reply) _logger.Log($"{_host} OK");
+					else _logger.Log($"{_host} FAILED");
 
-					double period = Convert.ToDouble(config.Get("period"));
-					await Task.Delay(TimeSpan.FromSeconds(period));
+					await Task.Delay(TimeSpan.FromSeconds(_period));
 				}
 				
 			}, cancellationToken);

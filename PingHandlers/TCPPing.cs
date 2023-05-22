@@ -9,21 +9,22 @@ namespace Pinger.PingHandlers
 {
     public class TCPPing : IPinger
     {
-        private readonly NameValueCollection config;
-        public TCPPing()
+        private readonly string _host;
+        private readonly int _port;
+
+        public TCPPing(string host, int port)
         {
-            config = ConfigurationManager.AppSettings;
+            _host = host;
+            _port = port;
         }
 
         public async Task<bool> Ping()
         {
-            string host = config.Get("host");
-            int port = Convert.ToInt32(config.Get("port"));
             try
             {
                 using (TcpClient tcpClient = new TcpClient())
                 {
-                    await tcpClient.ConnectAsync(host, port);
+                    await tcpClient.ConnectAsync(_host, _port);
                 }
                 return true;
             }

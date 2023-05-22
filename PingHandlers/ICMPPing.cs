@@ -1,6 +1,4 @@
 ﻿using Pinger.Interfaces;
-using System.Collections.Specialized;
-using System.Configuration;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 
@@ -8,17 +6,17 @@ namespace Pinger.PingHandlers
 {
 	public class ICMPPing : IPinger
 	{
-		private readonly NameValueCollection config;
-		public ICMPPing()
+		private readonly string _host;
+		public ICMPPing(string host)
 		{
-			config = ConfigurationManager.AppSettings;
+			_host = host;
 		}
 		public async Task<bool> Ping()
 		{
             try
 			{
                 Ping ping = new Ping();
-                await ping.SendPingAsync(config.Get("host"));
+                await ping.SendPingAsync(_host);
 				return true;
 			}
 			catch
