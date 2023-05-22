@@ -1,6 +1,7 @@
 ﻿using Ninject;
 using Pinger.Interfaces;
 using Pinger.Logger;
+using Pinger.PingHandlers;
 using System;
 
 namespace Pinger
@@ -12,9 +13,9 @@ namespace Pinger
 		{
 			ConfigureService();
 
-			var logger = kernel.Get<ILogger>();
+			var pinger = kernel.Get<IPingManager>();
+			pinger.Run(kernel);
 
-			logger.Log("Test");
 		}
 
 		private static void ConfigureService()
@@ -22,6 +23,8 @@ namespace Pinger
 			kernel = new StandardKernel();
 
 			kernel.Bind<ILogger>().To<LogToFile>();
+			kernel.Bind<IPingManager>().To<PingManager>();
+			kernel.Bind<ICMPPing>().ToSelf();
 
 		}
 	}

@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-	<LangVersion>8.0</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{217AF95C-8F96-41EA-8778-F2FEA48B9017}</ProjectGuid>
@@ -38,6 +38,7 @@
       <HintPath>packages\Ninject.3.3.6\lib\net45\Ninject.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -48,7 +49,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Interfaces\ILogger.cs" />
+    <Compile Include="Interfaces\IPinger.cs" />
+    <Compile Include="Interfaces\IPingManager.cs" />
     <Compile Include="Logger\LogToFile.cs" />
+    <Compile Include="PingHandlers\ICMPPing.cs" />
+    <Compile Include="PingHandlers\PingManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
