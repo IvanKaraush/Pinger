@@ -1,5 +1,4 @@
-﻿using Ninject;
-using Pinger.Interfaces;
+﻿using Pinger.Interfaces;
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -11,17 +10,16 @@ namespace Pinger.PingHandlers
 	public class PingManager : IPingManager
 	{
 		private readonly NameValueCollection config;
-		public PingManager()
+        private readonly ILogger _logger;
+		private readonly IPinger _pinger;
+        public PingManager(ILogger logger, IPinger pinger)
 		{
+			_pinger = pinger;
+			_logger = logger;
 			config = ConfigurationManager.AppSettings;
 		}
-		public void Run(IKernel kernel)
+		public void Run()
 		{
-			IPinger pinger = config.Get("protocol").ToLower() switch
-			{
-				"icmp" => kernel.Get<ICMPPing>()
-			};
-
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             CancellationToken cancellationToken = cancellationTokenSource.Token;
             
@@ -29,7 +27,10 @@ namespace Pinger.PingHandlers
 			{
 				while (!cancellationToken.IsCancellationRequested)
 				{
-					await pinger.Ping();
+					var reply = await _pinger.Ping();
+
+					if (reply) _logger.Log($"{config.Get("host")} OK");
+					else _logger.Log($"{config.Get("host")} FAILED");
 
 					double period = Convert.ToDouble(config.Get("period"));
 					await Task.Delay(TimeSpan.FromSeconds(period));
@@ -37,7 +38,7 @@ namespace Pinger.PingHandlers
 				
 			}, cancellationToken);
 			Console.WriteLine("Нажмите любую кнопку для остановки пинга");
-			Console.ReadLine();
+			Console.ReadKey();
 
 			cancellationTokenSource.Cancel();
 

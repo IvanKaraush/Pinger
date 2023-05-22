@@ -54,6 +54,7 @@
     <Compile Include="Logger\LogToFile.cs" />
     <Compile Include="PingHandlers\ICMPPing.cs" />
     <Compile Include="PingHandlers\PingManager.cs" />
+    <Compile Include="PingHandlers\TCPPing.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

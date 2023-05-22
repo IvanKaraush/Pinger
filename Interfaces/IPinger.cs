@@ -4,6 +4,6 @@ namespace Pinger.Interfaces
 {
 	public interface IPinger
 	{
-		Task Ping();
+        Task<bool> Ping();
 	}
 }
