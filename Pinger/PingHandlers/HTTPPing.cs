@@ -17,11 +17,19 @@ namespace Pinger.PingHandlers
 
         public async Task<bool> Ping()
         {
-            using (HttpClient client = new HttpClient())
+            try
             {
-                HttpResponseMessage response = await client.GetAsync($"http://{_host}");
-                return response.StatusCode == (HttpStatusCode)_statusCode;
+                using (HttpClient client = new HttpClient())
+                {
+                    HttpResponseMessage response = await client.GetAsync($"http://{_host}");
+                    return response.StatusCode == (HttpStatusCode)_statusCode;
+                }
             }
+            catch
+            {
+                return false;
+            }
+            
         }
     }
 }

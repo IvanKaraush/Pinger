@@ -2,7 +2,6 @@
 using Pinger.Interfaces;
 using Pinger.Logger;
 using Pinger.PingHandlers;
-using System;
 using System.Collections.Specialized;
 using System.Configuration;
 
