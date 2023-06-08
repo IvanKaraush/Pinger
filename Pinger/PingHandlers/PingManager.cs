@@ -1,5 +1,6 @@
 ﻿using Pinger.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,12 +10,12 @@ namespace Pinger.PingHandlers
 	{
 		private readonly string _host;
         private readonly double _period;
-        private readonly ILogger _logger;
+		public IEnumerable<ILogger> _loggers { get; set; }
 		private readonly IPinger _pinger;
-        public PingManager(ILogger logger, IPinger pinger, string host, double period)
+        public PingManager(IEnumerable<ILogger> loggers, IPinger pinger, string host, double period)
 		{
 			_pinger = pinger;
-			_logger = logger;
+			_loggers = loggers;
 			_host = host;
 			_period = period;
 		}
@@ -29,8 +30,11 @@ namespace Pinger.PingHandlers
 				{
 					var reply = await _pinger.Ping();
 
-					if (reply) _logger.Log($"{_host} OK");
-					else _logger.Log($"{_host} FAILED");
+					foreach (var item in _loggers)
+					{
+						if (reply) item.Log($"{_host} OK");
+						else item.Log($"{_host} FAILED");
+					}
 
 					await Task.Delay(TimeSpan.FromSeconds(_period));
 				}

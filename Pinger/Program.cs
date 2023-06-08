@@ -26,6 +26,9 @@ namespace Pinger
 			kernel = new StandardKernel();
 
 			kernel.Bind<ILogger>().To<LogToFile>();
+			kernel.Bind<ILogger>().To<LogToConsole>();
+
+
 			kernel.Bind<IPingManager>().To<PingManager>()
 				.WithConstructorArgument("host", config.Get("host"))
 				.WithConstructorArgument("period", double.Parse(config.Get("period")));
