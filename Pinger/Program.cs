@@ -1,54 +1,54 @@
-﻿using Ninject;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Pinger.Configuration;
 using Pinger.Interfaces;
 using Pinger.Logger;
-using Pinger.PingHandlers;
-using System.Collections.Specialized;
 using System.Configuration;
+using Pinger.PingHandlers;
 
 namespace Pinger
 {
 	class Program
 	{
-		private static IKernel kernel;
-        private static NameValueCollection config;
-        static void Main(string[] args)
-		{
-			config = ConfigurationManager.AppSettings;
-			ConfigureService();
+		private static AppSettings _appSettings;
 
-            var pinger = kernel.Get<IPingManager>();
+		static void Main(string[] args)
+		{
+			_appSettings = new AppSettings();
+			_appSettings.protocol = ConfigurationManager.AppSettings.Get("protocol");
+			_appSettings.host = ConfigurationManager.AppSettings.Get("host");
+			_appSettings.port = int.Parse(ConfigurationManager.AppSettings.Get("port"));
+			_appSettings.period = double.Parse(ConfigurationManager.AppSettings.Get("period"));
+			_appSettings.statusCode = int.Parse(ConfigurationManager.AppSettings.Get("statusCode"));
+			
+			var serviceProvider = ConfigureServices();
+			var pinger = serviceProvider.GetService<IPingManager>();
 			pinger.Run();
 
 		}
 
-		private static void ConfigureService()
+		private static ServiceProvider ConfigureServices()
 		{
-			kernel = new StandardKernel();
+			var serviceProvider = new ServiceCollection();
 
-			kernel.Bind<ILogger>().To<LogToFile>();
-			kernel.Bind<ILogger>().To<LogToConsole>();
+			serviceProvider.AddTransient<ILogger, LogToConsole>();
+			serviceProvider.AddTransient<ILogger, LogToFile>();
+			serviceProvider.AddSingleton(_appSettings);
+			serviceProvider.AddTransient<IPinger>(provider =>
+			{
+				if (_appSettings.protocol.ToLower() == "icmp")
+					return new ICMPPing(_appSettings.host);
 
+				if (_appSettings.protocol.ToLower() == "tcp")
+					return new TCPPing(_appSettings.host, _appSettings.port);
 
-			kernel.Bind<IPingManager>().To<PingManager>()
-				.WithConstructorArgument("host", config.Get("host"))
-				.WithConstructorArgument("period", double.Parse(config.Get("period")));
+				if (_appSettings.protocol.ToLower() == "http")
+					return new HTTPPing(_appSettings.host, _appSettings.statusCode);
 
-            kernel.Bind<IPinger>().To<ICMPPing>()
-				.When(c => config.Get("protocol").ToLower() == "icmp")
-				.WithConstructorArgument("host", config.Get("host"));
-            
-			kernel.Bind<IPinger>().To<TCPPing>()
-				.When(c => config.Get("protocol").ToLower() == "tcp")
-                .WithConstructorArgument("port", int.Parse(config.Get("port")))
-				.WithConstructorArgument("host", config.Get("host"));
-            
-			kernel.Bind<IPinger>().To<HTTPPing>()
-				.When(c => config.Get("protocol").ToLower() == "http")
-                .WithConstructorArgument("statusCode", int.Parse(config.Get("statusCode")))
-				.WithConstructorArgument("host", config.Get("host"));
+				return new ICMPPing(_appSettings.host);
+			});
+			serviceProvider.AddTransient<IPingManager, PingManager>();
 
-            kernel.Bind<IPinger>().To<ICMPPing>()
-				.WithConstructorArgument("host", config.Get("host"));
+			return serviceProvider.BuildServiceProvider();
 		}
     }
 }
