@@ -4,6 +4,7 @@ using Pinger.Interfaces;
 using Pinger.Logger;
 using System.Configuration;
 using Pinger.PingHandlers;
+using Pinger.UserInteraction;
 
 namespace Pinger
 {
@@ -32,19 +33,18 @@ namespace Pinger
 
 			serviceProvider.AddTransient<ILogger, LogToConsole>();
 			serviceProvider.AddTransient<ILogger, LogToFile>();
+			serviceProvider.AddTransient<IUserInteraction, ConsoleUserInteraction>();
+
 			serviceProvider.AddSingleton(_appSettings);
 			serviceProvider.AddTransient<IPinger>(provider =>
 			{
-				if (_appSettings.protocol.ToLower() == "icmp")
-					return new ICMPPing(_appSettings.host);
-
-				if (_appSettings.protocol.ToLower() == "tcp")
-					return new TCPPing(_appSettings.host, _appSettings.port);
-
-				if (_appSettings.protocol.ToLower() == "http")
-					return new HTTPPing(_appSettings.host, _appSettings.statusCode);
-
-				return new ICMPPing(_appSettings.host);
+				return _appSettings.protocol.ToLower() switch
+				{
+					"tcp" => new TCPPing(_appSettings.host, _appSettings.port),
+					"icmp" => new ICMPPing(_appSettings.host),
+					"http" => new HTTPPing(_appSettings.host, _appSettings.statusCode),
+					_ => new ICMPPing(_appSettings.host)
+				};
 			});
 			serviceProvider.AddTransient<IPingManager, PingManager>();
 

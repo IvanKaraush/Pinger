@@ -2,6 +2,7 @@
 using Pinger.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,11 +10,13 @@ namespace Pinger.PingHandlers
 {
 	public class PingManager : IPingManager
 	{
-		private readonly AppSettings _appSettings;
+		public IUserInteraction _userInteraction { get; set; }
 		public IEnumerable<ILogger> _loggers { get; set; }
+		private readonly AppSettings _appSettings;
 		private readonly IPinger _pinger;
-        public PingManager(IEnumerable<ILogger> loggers, IPinger pinger, AppSettings appSettings)
+        public PingManager(IUserInteraction userInteraction, IEnumerable<ILogger> loggers, IPinger pinger, AppSettings appSettings)
 		{
+			_userInteraction = userInteraction;
 			_pinger = pinger;
 			_loggers = loggers;
 			_appSettings = appSettings;
@@ -28,7 +31,7 @@ namespace Pinger.PingHandlers
 				while (!cancellationToken.IsCancellationRequested)
 				{
 					var reply = await _pinger.Ping();
-
+					
 					foreach (var item in _loggers)
 					{
 						if (reply) item.Log($"{_appSettings.host} OK");
@@ -37,10 +40,10 @@ namespace Pinger.PingHandlers
 
 					await Task.Delay(TimeSpan.FromSeconds(_appSettings.period));
 				}
-				
 			}, cancellationToken);
 			
-			Console.ReadKey();
+			_loggers.ToArray()[0].Log("Нажмите любую кнопку для остановки пинга");
+			_userInteraction.WaitForAnyKey();
 
 			cancellationTokenSource.Cancel();
 

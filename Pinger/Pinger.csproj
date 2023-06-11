@@ -131,6 +131,7 @@
     <Compile Include="Interfaces\ILogger.cs" />
     <Compile Include="Interfaces\IPinger.cs" />
     <Compile Include="Interfaces\IPingManager.cs" />
+    <Compile Include="Interfaces\IUserInteraction.cs" />
     <Compile Include="Logger\LogToConsole.cs" />
     <Compile Include="Logger\LogToFile.cs" />
     <Compile Include="PingHandlers\HTTPPing.cs" />
@@ -139,6 +140,7 @@
     <Compile Include="PingHandlers\TCPPing.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserInteraction\ConsoleUserInteraction.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
