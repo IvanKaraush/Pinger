@@ -41,8 +41,8 @@ namespace Pinger.PingHandlers
 					await Task.Delay(TimeSpan.FromSeconds(_appSettings.period));
 				}
 			}, cancellationToken);
-			
-			_loggers.ToArray()[0].Log("Нажмите любую кнопку для остановки пинга");
+
+			_userInteraction.DisplayMessage("Нажмите любую кнопку для остановки пинга");
 			_userInteraction.WaitForAnyKey();
 
 			cancellationTokenSource.Cancel();

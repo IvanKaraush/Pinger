@@ -5,6 +5,7 @@ using Pinger.Interfaces;
 using Pinger.PingHandlers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,9 +20,9 @@ namespace PingerTests.PingHandlersTests
             // Arrange
             bool pingResponse = true;
 
-            Mock<ILogger> loggerMock = new Mock<ILogger>();
-            IEnumerable<ILogger> loggers = new List<ILogger> { loggerMock.Object };
-            
+            Mock<IUserInteraction> userInteraction = new Mock<IUserInteraction>();
+            var loggers = new List<Mock<ILogger>>();
+
             Mock<AppSettings> appSettings = new Mock<AppSettings>();
             appSettings.Object.host = "ya.ru";
             appSettings.Object.period = 1;
@@ -29,7 +30,7 @@ namespace PingerTests.PingHandlersTests
             Mock<IPinger> pingerMock = new Mock<IPinger>();
             pingerMock.Setup(p => p.Ping()).ReturnsAsync(pingResponse);
 
-            PingManager pingManager = new PingManager(loggers, pingerMock.Object, appSettings.Object);
+            PingManager pingManager = new PingManager(userInteraction.Object, loggers.Select(l => l.Object), pingerMock.Object, appSettings.Object);
 
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             CancellationToken cancellationToken = cancellationTokenSource.Token;
@@ -41,8 +42,10 @@ namespace PingerTests.PingHandlersTests
             cancellationTokenSource.Cancel();
 
             // Assert
-            loggerMock.Verify(l => l.Log($"{appSettings.Object.host} OK"), Times.AtLeastOnce());
-
+            foreach (var item in loggers)
+            {
+                item.Verify(l => l.Log($"{appSettings.Object.host} FAILED"), Times.AtLeastOnce());
+            }
         }
 
         [TestMethod]
@@ -51,8 +54,8 @@ namespace PingerTests.PingHandlersTests
             // Arrange
             bool pingResponse = false;
 
-            Mock<ILogger> loggerMock = new Mock<ILogger>();
-            IEnumerable<ILogger> loggers = new List<ILogger> { loggerMock.Object };
+            Mock<IUserInteraction> userInteraction = new Mock<IUserInteraction>();
+            var loggers = new List<Mock<ILogger>>();
 
             Mock<AppSettings> appSettings = new Mock<AppSettings>();
             appSettings.Object.host = "my.ru";
@@ -61,7 +64,7 @@ namespace PingerTests.PingHandlersTests
             Mock<IPinger> pingerMock = new Mock<IPinger>();
             pingerMock.Setup(p => p.Ping()).ReturnsAsync(pingResponse);
 
-            PingManager pingManager = new PingManager(loggers, pingerMock.Object, appSettings.Object);
+            PingManager pingManager = new PingManager(userInteraction.Object, loggers.Select(l => l.Object), pingerMock.Object, appSettings.Object);
 
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             CancellationToken cancellationToken = cancellationTokenSource.Token;
@@ -72,8 +75,11 @@ namespace PingerTests.PingHandlersTests
             await Task.Delay(TimeSpan.FromSeconds(2));
             cancellationTokenSource.Cancel();
 
-            // Assert
-            loggerMock.Verify(l => l.Log($"{appSettings.Object.host} FAILED"), Times.AtLeastOnce());
+			// Assert
+			foreach (var item in loggers)
+			{
+                item.Verify(l => l.Log($"{appSettings.Object.host} FAILED"), Times.AtLeastOnce());
+            }
 
         }
     }

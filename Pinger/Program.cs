@@ -2,24 +2,23 @@
 using Pinger.Configuration;
 using Pinger.Interfaces;
 using Pinger.Logger;
-using System.Configuration;
 using Pinger.PingHandlers;
 using Pinger.UserInteraction;
+using Microsoft.Extensions.Configuration;
 
 namespace Pinger
 {
 	class Program
 	{
 		private static AppSettings _appSettings;
-
 		static void Main(string[] args)
 		{
 			_appSettings = new AppSettings();
-			_appSettings.protocol = ConfigurationManager.AppSettings.Get("protocol");
-			_appSettings.host = ConfigurationManager.AppSettings.Get("host");
-			_appSettings.port = int.Parse(ConfigurationManager.AppSettings.Get("port"));
-			_appSettings.period = double.Parse(ConfigurationManager.AppSettings.Get("period"));
-			_appSettings.statusCode = int.Parse(ConfigurationManager.AppSettings.Get("statusCode"));
+			var _configuration = new ConfigurationBuilder()
+				.AddJsonFile("appsettings.json")
+				.Build();
+			
+			_configuration.GetSection("AppSettings").Bind(_appSettings);
 			
 			var serviceProvider = ConfigureServices();
 			var pinger = serviceProvider.GetService<IPingManager>();
@@ -34,7 +33,6 @@ namespace Pinger
 			serviceProvider.AddTransient<ILogger, LogToConsole>();
 			serviceProvider.AddTransient<ILogger, LogToFile>();
 			serviceProvider.AddTransient<IUserInteraction, ConsoleUserInteraction>();
-
 			serviceProvider.AddSingleton(_appSettings);
 			serviceProvider.AddTransient<IPinger>(provider =>
 			{
